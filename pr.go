@@ -299,22 +299,39 @@ func main() {
 										if len(userApprovals) == 0 {
 											//	log.Printf("%v/%d self-merge by %s", repoName, pullRequest.Number, login)
 										} else {
-											globalMergeStats[login] = S{
-												Additions: pullRequest.Additions,
-												Deletions: pullRequest.Deletions,
+											if c, exists := globalMergeStats[login]; exists {
+												c.Additions += pullRequest.Additions
+												c.Deletions += pullRequest.Deletions
+												globalMergeStats[login] = c
+											} else {
+												globalMergeStats[login] = S{
+													Additions: pullRequest.Additions,
+													Deletions: pullRequest.Deletions,
+												}
 											}
 										}
 									} else {
 										//	log.Printf("merge,%s,%d,%d", pullRequest.MergedBy.Login, pullRequest.Additions, pullRequest.Deletions)
-										globalMergeStats[pullRequest.MergedBy.Login] = S{
-											Additions: pullRequest.Additions,
-											Deletions: pullRequest.Deletions,
+										if c, exists := globalMergeStats[pullRequest.MergedBy.Login]; exists {
+											c.Additions += pullRequest.Additions
+											c.Deletions += pullRequest.Deletions
+											globalMergeStats[pullRequest.MergedBy.Login] = c
+										} else {
+											globalMergeStats[pullRequest.MergedBy.Login] = S{
+												Additions: pullRequest.Additions,
+												Deletions: pullRequest.Deletions,
+											}
 										}
-										globalMergeStats[pullRequest.User.Login] = S{
-											Additions: pullRequest.Additions,
-											Deletions: pullRequest.Deletions,
+										if c, exists := globalMergeStats[pullRequest.User.Login]; exists {
+											c.Additions += pullRequest.Additions
+											c.Deletions += pullRequest.Deletions
+											globalMergeStats[pullRequest.User.Login] = c
+										} else {
+											globalMergeStats[pullRequest.User.Login] = S{
+												Additions: pullRequest.Additions,
+												Deletions: pullRequest.Deletions,
+											}
 										}
-
 									}
 								}
 							}
