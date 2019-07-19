@@ -14,6 +14,8 @@ type config struct {
 	Org      string `long:"org" short:"o" description:"github organization"`
 	PRNum    int    `long:"prnum" description:"github pr number"`
 	Update   bool   `long:"update" description:"fetch latest github data"`
+	Month    int    `long:"month" description:"specific month"`
+	Year     int    `long:"year" description:"specific year"`
 }
 
 func loadConfig() *config {

@@ -30,9 +30,9 @@ func (a *Client) RateLimit() (ApiRateLimitRule, error) {
 			core := apiRateLimit.Resources.Core
 			if core.Remaining == 0 {
 				exp := time.Unix(core.Reset, 0)
-				secs := exp.Sub(time.Now())
-				log.Printf("RATELIMIT REACHED - SLEEPING %v\n", secs)
-				time.Sleep(secs)
+				dur := time.Until(exp)
+				log.Printf("RATELIMIT REACHED - SLEEPING %v\n", dur)
+				time.Sleep(dur)
 				continue
 			}
 			log.Printf("NEW RATELIMIT LOADED - %d remaining, exp %v", core.Remaining, time.Unix(core.Reset, 0))

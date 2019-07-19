@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	apiOrgReposURL = `https://api.github.com/orgs/%s/repos?per_page=250`
+	apiOrgReposURL = `https://api.github.com/users/%s/repos?per_page=250`
 )
 
 func (a *Client) FetchOrgRepos(org string) ([]*ApiRepository, error) {

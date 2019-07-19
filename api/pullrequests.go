@@ -67,19 +67,7 @@ func (a *Client) FetchPullsRequest(org, repo string) ([]ApiPullsRequest, error) 
 			break
 		}
 
-		for _, pullsRequest := range pullsRequests {
-			/*
-				t, err := time.Parse(time.RFC3339, pullsRequest.UpdatedAt)
-				if err != nil {
-					fmt.Fprintf(os.Stderr, "Failed to parse time: %v\n", err)
-					continue
-				}
-				if lastUpdated.After(t) || lastUpdated.Equal(t) {
-					return totalPullsRequests, nil
-				}
-			*/
-			totalPullsRequests = append(totalPullsRequests, pullsRequest)
-		}
+		totalPullsRequests = append(totalPullsRequests, pullsRequests...)
 		page++
 	}
 	return totalPullsRequests, nil
@@ -117,23 +105,7 @@ func (a *Client) FetchPullRequestCommits(org, repo string, prNum int, monthYear 
 			break
 		}
 
-		for _, commit := range pullRequestCommits {
-			/*
-			           t, err := time.Parse(time.RFC3339, commit.Commit.Committer.Date)
-			           if err != nil {
-			                   fmt.Fprintf(os.Stderr, "Failed to parse time: %v\n", err)
-			                   continue
-			           }
-			           if monthYear.After(t) {
-			                   return totalPullRequestCommits, nil
-			           }
-			           if monthYear.Month() != t.Month() || monthYear.Year() != t.Year() {
-			                   // skip
-			   continue
-			   }
-			*/
-			totalPullRequestCommits = append(totalPullRequestCommits, commit)
-		}
+		totalPullRequestCommits = append(totalPullRequestCommits, pullRequestCommits...)
 		page++
 	}
 	return totalPullRequestCommits, nil

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/csv"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -30,10 +29,6 @@ type server struct {
 func yearMonth(t time.Time) string {
 	return fmt.Sprintf("%d%02d", t.Year(), t.Month())
 }
-
-var (
-	ErrNotPR = errors.New("not requested pr")
-)
 
 func main() {
 	cfg := loadConfig()
@@ -98,7 +93,13 @@ func main() {
 			repoBucket := orgBucket.Bucket(k)
 
 			for year := 2016; year <= 2019; year++ {
+				if cfg.Year != 0 && cfg.Year != year {
+					continue
+				}
 				for month := 1; month <= 12; month++ {
+					if cfg.Month != 0 && cfg.Month != month {
+						continue
+					}
 					ymTime := time.Date(year, time.Month(month), 0, 0, 0, 0, 0, time.UTC)
 					ym := fmt.Sprintf("%d%02d", year, month)
 					nonMergeStats := make(map[string]uint)
@@ -162,7 +163,8 @@ func main() {
 								if cfg.User != "" && cfg.User != review.User.Login {
 									return nil
 								}
-								if review.User.Login == pullRequest.User.Login {
+								if review.User.Login == pullRequest.User.Login ||
+									review.User.Login == commit.Author.Login {
 									//log.Printf("skipping self-review '%s'", review.User.Login)
 									// do not count review on own PR
 									return nil
@@ -458,196 +460,6 @@ func main() {
 	}); err != nil {
 		fmt.Printf("error: %v\n", err)
 	}
-
-	os.Exit(1)
-
-	/*
-				for mo := 1; mo < 13; mo++ {
-					monthYear := time.Date(2017, time.Month(mo), 1, 0, 0, 0, 0, time.UTC)
-
-					fmt.Fprintf(os.Stderr, "Processing %v-%v\n", monthYear.Year(), monthYear.Month())
-					pullsRequests, err := fetchPullsRequest(org, repo, monthYear)
-					if err != nil {
-						fmt.Fprintf(os.Stderr, "FetchPullRequests failure: %v\n", err)
-						os.Exit(1)
-					}
-
-					nonMergeStats := make(map[string]uint)
-					globalMergeStats := make(map[string]S)
-					globalCommitStats := make(map[string]S)
-					globalUserStats := make(map[string]S)
-					for _, pullsRequest := range pullsRequests {
-						prNum := pullsRequest.Number
-						shas := make(map[string]struct{})
-
-						prCommits, err := s.tc.FetchPullRequestCommits(org, repo, prNum, monthYear)
-						if err != nil {
-							panic(err)
-						}
-
-						// active commits
-						for _, commit := range prCommits {
-							shas[commit.SHA] = struct{}{}
-						}
-
-						reviews, err := fetchPullRequestReviews(org, repo, prNum, monthYear)
-						if err != nil {
-							panic(err)
-						}
-
-						//fmt.Println(os.Stderr, "Inactive PR commits with reviews:")
-						// skip - force push?
-							//for _, review := range reviews {
-								//if _, exists := shas[review.CommitID]; !exists {
-								//	shas[review.CommitID] = struct{}{}
-							//	}
-						//	}
-
-						//fmt.Fprintln(os.Stderr, "Fetching commits:")
-						commits := make([]api.ApiPullRequestCommit, 0, len(shas))
-						for sha := range shas {
-							commit, err := s.tc.FetchCommit(org, repo, sha)
-							if err != nil {
-								panic(err)
-							}
-							commits = append(commits, *commit)
-						}
-						sort.Sort(sorter(commits))
-						rr := make(map[string]S)
-
-						//fmt.Fprintln(os.Stderr, "Processing commits...")
-						for _, commit := range commits {
-							login := commit.Author.Login
-							stats := commit.Stats
-
-							gstats, exists := globalCommitStats[login]
-							if !exists {
-								s := S{
-									Additions: stats.Additions,
-									Deletions: stats.Deletions,
-									Total:     stats.Total,
-								}
-								globalCommitStats[login] = s
-								continue
-							}
-							gstats.Additions += stats.Additions
-							gstats.Deletions += stats.Deletions
-							gstats.Total += stats.Total
-							globalCommitStats[login] = gstats
-						}
-
-						//	fmt.Printf("Processing reviews...\n")
-						for _, review := range reviews {
-							login := review.User.Login
-							if login == pullsRequest.User.Login {
-								continue
-							}
-							submitTime := parseTime(review.SubmittedAt)
-							//		fmt.Printf("%d: %v %v\n", i, login, submitTime)
-							for _, commit := range commits {
-								if commit.Commit.Committer.Date == "" {
-									//spew.Dump(commit)
-								}
-								commitTime := parseTime(commit.Commit.Committer.Date)
-
-								if !submitTime.After(commitTime) {
-									//fmt.Printf("   IGNORING %v - %v\n", commit.SHA, commitTime)
-									continue
-								}
-
-								stats := commit.Stats
-								shaStats, exists := rr[login]
-								if !exists {
-									c := make(map[string]S)
-									c[commit.SHA] = S{
-										Additions: stats.Additions,
-										Deletions: stats.Deletions,
-										Total:     stats.Total,
-									}
-									rr[login] = c
-									//fmt.Printf("  ACCEPTING %v - %v +%d -%d\n",
-									//	commit.SHA, commitTime, stats.Additions, stats.Deletions)
-									continue
-								}
-								if _, exists := shaStats[commit.SHA]; exists {
-									//fmt.Printf("  DUPLICATE %v\n", commit.SHA)
-									continue
-								}
-								s := S{
-									Additions: stats.Additions,
-									Deletions: stats.Deletions,
-									Total:     stats.Total,
-								}
-								//fmt.Printf("  ACCEPTING %v - %v +%d -%d\n",
-								//		commit.SHA, commitTime, s.Additions, s.Deletions)
-								rr[login][commit.SHA] = s
-							}
-						}
-						if pullsRequest.State == "closed" {
-							pullRequest, err := fetchPullRequest(org, repo, prNum)
-							if err != nil {
-								fmt.Fprintf(os.Stderr, "fetchPullRequest failed: %v\n", err)
-								os.Exit(1)
-							}
-							login := pullRequest.User.Login
-							if !pullRequest.Merged {
-								if c, exists := nonMergeStats[login]; exists {
-									nonMergeStats[login] = c + 1
-								} else {
-									nonMergeStats[login] = 1
-								}
-								fmt.Fprintf(os.Stderr, "VERIFY: %d closed but not merged\n", prNum)
-								continue
-							}
-
-							mergeTime := parseTime(pullRequest.MergedAt)
-							good := monthYear.Month() == mergeTime.Month() &&
-								monthYear.Year() == mergeTime.Year()
-
-							if good {
-								add := pullRequest.Additions
-								del := pullRequest.Deletions
-								gstats, exists := globalMergeStats[login]
-								if !exists {
-									s := S{
-										Additions: add,
-										Deletions: del,
-									}
-		//log.Printf("merge,%s,%s,%d,%d", review.User.Login, commit.SHA, commit.Stats.Additions, commit.Stats.Deletions)
-									globalMergeStats[login] = s
-								} else {
-									gstats.Additions += add
-									gstats.Deletions += del
-									globalMergeStats[login] = gstats
-								}
-							}
-						}
-
-						// calc review stats
-						for login, stats := range rr {
-							var a, d, t int
-							for _, stat := range stats {
-								a += stat.Additions
-								d += stat.Deletions
-								t += stat.Total
-							}
-
-							gstats, exists := globalUserStats[login]
-							if !exists {
-								s := S{Additions: a, Deletions: d}
-								globalUserStats[login] = s
-								continue
-							}
-							gstats.Additions += a
-							gstats.Deletions += d
-							gstats.Total += t
-							globalUserStats[login] = gstats
-						}
-					}
-
-				}
-	*/
-	fmt.Fprintln(os.Stderr, "----- complete -----")
 }
 
 func parseTime(tstamp string) time.Time {

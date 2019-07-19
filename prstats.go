@@ -27,7 +27,7 @@ func (s *server) PRStats(org, repo string, prNumber int) error {
 		}
 		prBucket := repoBucket.Bucket(prNum[:])
 		if prBucket == nil {
-			return fmt.Errorf("invalid PR: %s", prNumber)
+			return fmt.Errorf("invalid PR: %d", prNumber)
 		}
 		reviewBucket := prBucket.Bucket([]byte("reviews"))
 
