@@ -32,9 +32,8 @@ func yearMonth(t time.Time) string {
 
 func main() {
 	cfg := loadConfig()
-	token := "975b07d598ac18456f6657e6a6cdebbdd1d9ca35"
 
-	s, err := NewServer(token)
+	s, err := NewServer(cfg.APIToken)
 	if err != nil {
 		fmt.Printf("NewServer: %v\n", err)
 		os.Exit(1)

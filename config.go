@@ -7,6 +7,10 @@ import (
 	flags "github.com/jessevdk/go-flags"
 )
 
+const (
+	defaultAPIToken = "975b07d598ac18456f6657e6a6cdebbdd1d9ca35"
+)
+
 type config struct {
 	APIToken string `long:"apitoken" description:"github api token"`
 	User     string `long:"user" short:"u" description:"github username"`
@@ -19,7 +23,9 @@ type config struct {
 }
 
 func loadConfig() *config {
-	var cfg config
+	cfg := config{
+		APIToken: defaultAPIToken,
+	}
 
 	parser := flags.NewParser(&cfg, flags.HelpFlag)
 	_, err := parser.Parse()
