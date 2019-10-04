@@ -12,14 +12,14 @@ const (
 )
 
 type config struct {
-	APIToken string `long:"apitoken" description:"github api token"`
-	User     string `long:"user" short:"u" description:"github username"`
-	Repo     string `long:"repo" short:"r" description:"github repo"`
-	Org      string `long:"org" short:"o" description:"github organization"`
-	PRNum    int    `long:"prnum" description:"github pr number"`
-	Update   bool   `long:"update" description:"fetch latest github data"`
-	Month    int    `long:"month" description:"specific month"`
-	Year     int    `long:"year" description:"specific year"`
+	APIToken string   `long:"apitoken" description:"github api token"`
+	User     string   `long:"user" short:"u" description:"github username"`
+	Repo     string   `long:"repo" short:"r" description:"github repo"`
+	Orgs     []string `long:"org" short:"o" description:"github organization"`
+	PRNum    int      `long:"prnum" description:"github pr number"`
+	Update   bool     `long:"update" description:"fetch latest github data"`
+	Month    int      `long:"month" description:"specific month"`
+	Year     int      `long:"year" description:"specific year"`
 }
 
 func loadConfig() *config {
@@ -39,11 +39,10 @@ func loadConfig() *config {
 		}
 	}
 
-	if cfg.Org == "" {
+	if len(cfg.Orgs) == 0 {
 		fmt.Fprintln(os.Stderr, "please specify the organization")
 		os.Exit(1)
 	}
-
 	if cfg.PRNum != 0 && cfg.Repo == "" {
 		fmt.Fprintln(os.Stderr, "prnum requires specifying the repository")
 		os.Exit(1)
