@@ -11,7 +11,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/decred/github-tracker/database"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
@@ -43,7 +42,7 @@ type cockroachdb struct {
 // NewPullRequest satisfies the database interface.
 func (c *cockroachdb) NewPullRequest(dbPullRequest *database.PullRequest) error {
 	pr := EncodePullRequest(dbPullRequest)
-	spew.Dump(pr)
+
 	log.Debugf("NewPullRequest: %v", pr.URL)
 	return c.recordsdb.Create(&pr).Error
 }
