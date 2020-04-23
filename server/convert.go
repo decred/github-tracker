@@ -87,13 +87,53 @@ func convertDBPullRequestsToPullRequests(dbPRs []*database.PullRequest) []types.
 
 	for _, dbPR := range dbPRs {
 		pr := types.PullRequestInformation{
-			Repoistory: dbPR.Repo,
-			Additions:  dbPR.Additions,
-			Deletions:  dbPR.Deletions,
+			Repository: dbPR.Repo,
+			Additions:  int64(dbPR.Additions),
+			Deletions:  int64(dbPR.Deletions),
 			Date:       time.Unix(dbPR.MergedAt, 0).Format(time.RFC1123),
 			Number:     dbPR.Number,
 		}
 		prInfo = append(prInfo, pr)
 	}
 	return prInfo
+}
+
+func convertPRsToUserInformation(prs []*database.PullRequest) *types.UserInformationResult {
+	repoStats := make([]types.RepositoryInformation, 0, 1048) // PNOOMA
+	userInfo := &types.UserInformationResult{}
+	prInfo := make([]types.PullRequestInformation, 0, len(prs))
+	for _, pr := range prs {
+		repoFound := false
+		for i, repoStat := range repoStats {
+			if repoStat.Repository == pr.Repo {
+				repoFound = true
+				repoStat.PRs = append(repoStat.PRs, pr.URL)
+				repoStat.MergeAdditions += int64(pr.Additions)
+				repoStat.MergeDeletions += int64(pr.Deletions)
+				repoStats[i] = repoStat
+				break
+			}
+		}
+		if !repoFound {
+			repoStat := types.RepositoryInformation{
+				PRs:            []string{pr.URL},
+				Repository:     pr.Repo,
+				MergeAdditions: int64(pr.Additions),
+				MergeDeletions: int64(pr.Deletions),
+			}
+			repoStats = append(repoStats, repoStat)
+		}
+		prInfo = append(prInfo, types.PullRequestInformation{
+			Repository: pr.Repo,
+			URL:        pr.URL,
+			Number:     pr.Number,
+			Additions:  int64(pr.Additions),
+			Deletions:  int64(pr.Deletions),
+			Date:       time.Unix(pr.MergedAt, 0).String(),
+			State:      pr.State,
+		})
+	}
+	userInfo.RepoDetails = repoStats
+	userInfo.PRs = prInfo
+	return userInfo
 }

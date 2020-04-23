@@ -78,8 +78,8 @@ func (c *cockroachdb) PullRequestByURL(url string) (*database.PullRequest, error
 
 func (c *cockroachdb) PullRequestsByUserDates(username string, start, end int64) ([]*database.PullRequest, error) {
 	log.Debugf("PullRequestsByUserDates: %v %v", time.Unix(start, 0),
-
 		time.Unix(end, 0))
+
 	// Get all PRs from a user between the given dates.
 	prs := make([]PullRequest, 0, 1024) // PNOOMA
 	err := c.recordsdb.
@@ -98,6 +98,33 @@ func (c *cockroachdb) PullRequestsByUserDates(username string, start, end int64)
 		dbPRs = append(dbPRs, DecodePullRequest(&vv))
 	}
 	return dbPRs, nil
+}
+
+func (c *cockroachdb) AllUsersByDates(start, end int64) ([]string, error) {
+	log.Debugf("AllUsersByDates: %v %v", time.Unix(start, 0),
+		time.Unix(end, 0))
+
+	type Users struct {
+		User string
+	}
+	// Get all PRs from a user between the given dates.
+	usernames := make([]Users, 0, 1024) // PNOOMA
+	err := c.recordsdb.
+		Where("DISTINCT AND "+
+			"merged_at BETWEEN ? AND ?",
+			start,
+			end).
+		Find(&usernames).
+		Error
+	if err != nil {
+		return nil, err
+	}
+
+	names := make([]string, 0, len(usernames))
+	for _, vv := range usernames {
+		names = append(names, vv.User)
+	}
+	return names, nil
 }
 
 // Create new commit.
@@ -164,21 +191,6 @@ func createGHTables(tx *gorm.DB) error {
 		}
 	}
 
-	/*
-		var v Version
-		err := tx.Where("id = ?", cacheID).
-			Find(&v).
-			Error
-		if err == gorm.ErrRecordNotFound {
-			err = tx.Create(
-				&Version{
-					ID:        cacheID,
-					Version:   ghVersion,
-					Timestamp: time.Now().Unix(),
-				}).Error
-			return err
-		}
-	*/
 	return nil
 
 }

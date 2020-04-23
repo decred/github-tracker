@@ -19,25 +19,29 @@ type UserInformationResult struct {
 }
 
 type RepositoryInformation struct {
-	Repository      string `json:"repo"`
-	CommitAdditions int    `json:"commitadditions"`
-	CommitDeletions int    `json:"commitdeletions`
-	MergeAdditions  int    `json:"mergeadditions"`
-	MergeDeletions  int    `json:"mergedeletions"`
-	ReviewAdditions int    `json:"reviewadditions"`
-	ReviewDeletions int    `json:"reviewdeletions"`
+	PRs             []string `json:"prs"`
+	Repository      string   `json:"repo"`
+	CommitAdditions int64    `json:"commitadditions"`
+	CommitDeletions int64    `json:"commitdeletions`
+	MergeAdditions  int64    `json:"mergeadditions"`
+	MergeDeletions  int64    `json:"mergedeletions"`
+	ReviewAdditions int64    `json:"reviewadditions"`
+	ReviewDeletions int64    `json:"reviewdeletions"`
 }
 
 type PullRequestInformation struct {
-	Repoistory string `json:"repo"`
+	Repository string `json:"repo"`
+	URL        string `json:"url"`
 	Number     int    `json:"number"`
-	Additions  int    `json:"additions"`
-	Deletions  int    `json:"deletions"`
+	Additions  int64  `json:"additions"`
+	Deletions  int64  `json:"deletions"`
 	Date       string `json:"date"`
+	State      string `json:"state"`
 }
 
 type ReviewInformation struct {
 	Repoistory string `json:"repo"`
+	URL        string `json:"url"`
 	Number     int    `json:"number"`
 	Additions  int    `json:"additions"`
 	Deletions  int    `json:"deletions"`

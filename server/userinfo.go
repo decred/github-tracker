@@ -17,15 +17,15 @@ func yearMonth(t time.Time) string {
 }
 
 func (s *Server) UserInformation(ctx context.Context, org string, user string, year, month int) (*types.UserInformationResult, error) {
-	userInfo := &types.UserInformationResult{}
-	userInfo.RepoDetails = make([]types.RepositoryInformation, 0, 1024)
-	userInfo.Reviews = make([]types.ReviewInformation, 0, 1024)
-
-	dbUserPRs, err := s.DB.PullRequestsByUserDates(user, int64(year), int64(month))
+	startDate := time.Date(int(year), time.Month(month), 0, 0, 0, 0, 0, time.UTC).Unix()
+	endDate := time.Date(int(year), time.Month(month+1), 0, 0, 0, 0, 0, time.UTC).Unix()
+	dbUserPRs, err := s.DB.PullRequestsByUserDates(user, startDate, endDate)
 	if err != nil {
 		return nil, err
 	}
-	userInfoPrs := convertDBPullRequestsToPullRequests(dbUserPRs)
-	userInfo.PRs = userInfoPrs
+	userInfo := convertPRsToUserInformation(dbUserPRs)
+	userInfo.User = user
+	userInfo.Organization = org
+
 	return userInfo, nil
 }
