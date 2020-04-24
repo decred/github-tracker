@@ -100,6 +100,30 @@ func (c *cockroachdb) PullRequestsByUserDates(username string, start, end int64)
 	return dbPRs, nil
 }
 
+func (c *cockroachdb) ReviewsByUserDates(username string, start, end int64) ([]database.PullRequestReview, error) {
+	log.Debugf("ReviewsByUserDates: %v %v", time.Unix(start, 0),
+		time.Unix(end, 0))
+
+	// Get all Reviews from a user between the given dates.
+	reviews := make([]PullRequestReview, 0, 1024) // PNOOMA
+	err := c.recordsdb.
+		Where("author = ? AND "+
+			"merged_at BETWEEN ? AND ?",
+			username,
+			start,
+			end).
+		Find(&reviews).
+		Error
+	if err != nil {
+		return nil, err
+	}
+	dbReviews := make([]database.PullRequestReview, 0, len(reviews))
+	for _, vv := range reviews {
+		dbReviews = append(dbReviews, DecodePullRequestReview(&vv))
+	}
+	return dbReviews, nil
+}
+
 func (c *cockroachdb) AllUsersByDates(start, end int64) ([]string, error) {
 	log.Debugf("AllUsersByDates: %v %v", time.Unix(start, 0),
 		time.Unix(end, 0))

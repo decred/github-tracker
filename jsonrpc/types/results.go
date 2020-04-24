@@ -46,4 +46,5 @@ type ReviewInformation struct {
 	Additions  int    `json:"additions"`
 	Deletions  int    `json:"deletions"`
 	Date       string `json:"date"`
+	State      string `json:"state"`
 }

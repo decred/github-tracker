@@ -34,11 +34,14 @@ type Database interface {
 	PullRequestByURL(string) (*PullRequest, error)
 	PullRequestsByUserDates(string, int64, int64) ([]*PullRequest, error) // Retreive all pull requests that match username between dates
 
+	AllUsersByDates(int64, int64) ([]string, error)
+
 	NewCommit(*Commit) error    // Create new commit
 	UpdateCommit(*Commit) error // Update existing commit
 
-	NewPullRequestReview(*PullRequestReview) error    // Create new pull request review
-	UpdatePullRequestReview(*PullRequestReview) error // Update existing pull request review
+	NewPullRequestReview(*PullRequestReview) error                        // Create new pull request review
+	UpdatePullRequestReview(*PullRequestReview) error                     // Update existing pull request review
+	ReviewsByUserDates(string, int64, int64) ([]PullRequestReview, error) // Retreive all reviews that match username between dates
 
 	Setup() error
 

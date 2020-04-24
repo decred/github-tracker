@@ -98,10 +98,11 @@ func convertDBPullRequestsToPullRequests(dbPRs []*database.PullRequest) []types.
 	return prInfo
 }
 
-func convertPRsToUserInformation(prs []*database.PullRequest) *types.UserInformationResult {
+func convertPRsandReviewsToUserInformation(prs []*database.PullRequest, reviews []database.PullRequestReview) *types.UserInformationResult {
 	repoStats := make([]types.RepositoryInformation, 0, 1048) // PNOOMA
 	userInfo := &types.UserInformationResult{}
 	prInfo := make([]types.PullRequestInformation, 0, len(prs))
+	reviewInfo := make([]types.ReviewInformation, 0, len(reviews))
 	for _, pr := range prs {
 		repoFound := false
 		for i, repoStat := range repoStats {
@@ -132,7 +133,14 @@ func convertPRsToUserInformation(prs []*database.PullRequest) *types.UserInforma
 			Date:       time.Unix(pr.MergedAt, 0).String(),
 			State:      pr.State,
 		})
+
 	}
+	for _, review := range reviews {
+		reviewInfo = append(reviewInfo, types.ReviewInformation{
+			State: review.State,
+		})
+	}
+
 	userInfo.RepoDetails = repoStats
 	userInfo.PRs = prInfo
 	return userInfo

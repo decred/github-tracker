@@ -23,9 +23,12 @@ func (s *Server) UserInformation(ctx context.Context, org string, user string, y
 	if err != nil {
 		return nil, err
 	}
-	userInfo := convertPRsToUserInformation(dbUserPRs)
+	dbReviews, err := s.DB.ReviewsByUserDates(user, startDate, endDate)
+	if err != nil {
+		return nil, err
+	}
+	userInfo := convertPRsandReviewsToUserInformation(dbUserPRs, dbReviews)
 	userInfo.User = user
 	userInfo.Organization = org
-
 	return userInfo, nil
 }
