@@ -40,6 +40,8 @@ func EncodePullRequestReview(dbPullRequestReview *database.PullRequestReview) Pu
 	prReview.SubmittedAt = dbPullRequestReview.SubmittedAt
 	prReview.CommitID = dbPullRequestReview.CommitID
 	prReview.ID = dbPullRequestReview.ID
+	prReview.Number = dbPullRequestReview.Number
+	prReview.Repo = dbPullRequestReview.Repo
 
 	return prReview
 }
@@ -52,6 +54,8 @@ func DecodePullRequestReview(prReview *PullRequestReview) database.PullRequestRe
 	dbPullRequestReview.SubmittedAt = prReview.SubmittedAt
 	dbPullRequestReview.CommitID = prReview.CommitID
 	dbPullRequestReview.ID = prReview.ID
+	dbPullRequestReview.Repo = prReview.Repo
+	dbPullRequestReview.Number = prReview.Number
 
 	return dbPullRequestReview
 }

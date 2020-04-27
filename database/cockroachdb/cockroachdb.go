@@ -11,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/decred/github-tracker/database"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
@@ -107,8 +108,9 @@ func (c *cockroachdb) ReviewsByUserDates(username string, start, end int64) ([]d
 	// Get all Reviews from a user between the given dates.
 	reviews := make([]PullRequestReview, 0, 1024) // PNOOMA
 	err := c.recordsdb.
-		Where("author = ? AND "+
-			"merged_at BETWEEN ? AND ?",
+		Table(tableNameReviews).
+		Where("user = ? AND "+
+			"submitted_at BETWEEN ? AND ?",
 			username,
 			start,
 			end).
@@ -117,9 +119,28 @@ func (c *cockroachdb) ReviewsByUserDates(username string, start, end int64) ([]d
 	if err != nil {
 		return nil, err
 	}
+	type RelatedCommit struct {
+		Additions int
+		Deletions int
+	}
 	dbReviews := make([]database.PullRequestReview, 0, len(reviews))
 	for _, vv := range reviews {
-		dbReviews = append(dbReviews, DecodePullRequestReview(&vv))
+
+		reviewCommit := RelatedCommit{}
+		err := c.recordsdb.
+			Table(tableNameCommits).
+			Where("sha = ? ",
+				vv.CommitID).
+			Find(&reviewCommit).
+			Error
+		if err != nil {
+			return nil, err
+		}
+		dbReview := DecodePullRequestReview(&vv)
+		dbReview.Additions = reviewCommit.Additions
+		dbReview.Deletions = reviewCommit.Deletions
+		spew.Dump(dbReview)
+		dbReviews = append(dbReviews, dbReview)
 	}
 	return dbReviews, nil
 }
@@ -134,6 +155,7 @@ func (c *cockroachdb) AllUsersByDates(start, end int64) ([]string, error) {
 	// Get all PRs from a user between the given dates.
 	usernames := make([]Users, 0, 1024) // PNOOMA
 	err := c.recordsdb.
+		Table(tableNamePullRequest).
 		Where("DISTINCT AND "+
 			"merged_at BETWEEN ? AND ?",
 			start,

@@ -84,6 +84,10 @@ type PullRequestReview struct {
 	State       string
 	SubmittedAt int64
 	CommitID    string
+	Repo        string
+	Number      int
+	Additions   int
+	Deletions   int
 }
 
 /*

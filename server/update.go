@@ -62,7 +62,7 @@ func (s *Server) Update(ctx context.Context, org string) error {
 					if err != nil {
 						panic(err)
 					}
-					reviews := convertAPIReviewsToDbReviews(prReviews)
+					reviews := convertAPIReviewsToDbReviews(prReviews, repo.Name, pr.Number)
 					dbPullRequest.Reviews = reviews
 
 					err = s.DB.NewPullRequest(dbPullRequest)
@@ -91,7 +91,7 @@ func (s *Server) Update(ctx context.Context, org string) error {
 					panic(err)
 				}
 
-				reviews := convertAPIReviewsToDbReviews(prReviews)
+				reviews := convertAPIReviewsToDbReviews(prReviews, repo.Name, pr.Number)
 				dbPullRequest.Reviews = reviews
 
 				err = s.DB.UpdatePullRequest(dbPullRequest)

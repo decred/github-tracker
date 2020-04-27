@@ -67,6 +67,8 @@ type PullRequestReview struct {
 	State          string `gorm:"not null"`
 	SubmittedAt    int64  `gorm:"not null"`
 	CommitID       string `gorm:"not null"`
+	Repo           string `gorm:"not null"`
+	Number         int    `gorm:"not null"`
 }
 
 func (PullRequestReview) TableName() string {

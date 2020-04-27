@@ -62,10 +62,12 @@ func convertAPICommitToDbCommit(apiCommit api.ApiPullRequestCommit) database.Com
 	return dbCommit
 }
 
-func convertAPIReviewsToDbReviews(apiReviews []api.ApiPullRequestReview) []database.PullRequestReview {
+func convertAPIReviewsToDbReviews(apiReviews []api.ApiPullRequestReview, repo string, prNumber int) []database.PullRequestReview {
 	dbReviews := make([]database.PullRequestReview, 0, len(apiReviews))
 	for _, review := range apiReviews {
 		dbReview := convertAPIReviewToDbReview(review)
+		dbReview.Repo = repo
+		dbReview.Number = prNumber
 		dbReviews = append(dbReviews, dbReview)
 	}
 	return dbReviews
@@ -136,6 +138,24 @@ func convertPRsandReviewsToUserInformation(prs []*database.PullRequest, reviews 
 
 	}
 	for _, review := range reviews {
+		repoFound := false
+		for i, repoStat := range repoStats {
+			if repoStat.Repository == review.Repo {
+				repoFound = true
+				repoStat.ReviewAdditions += int64(review.Additions)
+				repoStat.ReviewDeletions += int64(review.Deletions)
+				repoStats[i] = repoStat
+				break
+			}
+		}
+		if !repoFound {
+			repoStat := types.RepositoryInformation{
+				Repository:      review.Repo,
+				ReviewAdditions: int64(review.Additions),
+				ReviewDeletions: int64(review.Deletions),
+			}
+			repoStats = append(repoStats, repoStat)
+		}
 		reviewInfo = append(reviewInfo, types.ReviewInformation{
 			State: review.State,
 		})
