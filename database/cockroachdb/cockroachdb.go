@@ -127,7 +127,7 @@ func (c *cockroachdb) ReviewsByUserDates(username string, start, end int64) ([]d
 		repo := vv.Repo
 		if !strings.Contains(repo, "decred") {
 			repo = "decred/" + repo
-		}\
+		}
 		err := c.recordsdb.
 			Table(tableNamePullRequest).
 			Where("repo = ? AND number = ?",
