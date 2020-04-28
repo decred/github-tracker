@@ -14,7 +14,7 @@ import (
 
 func convertAPIPullRequestToDbPullRequest(apiPR *api.ApiPullRequest, repo api.ApiRepository, org string) (*database.PullRequest, error) {
 	dbPR := &database.PullRequest{
-		Repo:         repo.FullName,
+		Repo:         repo.Name,
 		Organization: org,
 		User:         apiPR.User.Login,
 		URL:          apiPR.URL,
@@ -76,7 +76,7 @@ func convertAPIReviewsToDbReviews(apiReviews []api.ApiPullRequestReview, repo st
 func convertAPIReviewToDbReview(apiReview api.ApiPullRequestReview) database.PullRequestReview {
 	dbReview := database.PullRequestReview{
 		ID:          apiReview.ID,
-		User:        apiReview.User.Login,
+		Author:      apiReview.User.Login,
 		State:       apiReview.State,
 		SubmittedAt: parseTime(apiReview.SubmittedAt).Unix(),
 		CommitID:    apiReview.CommitID,
@@ -157,11 +157,16 @@ func convertPRsandReviewsToUserInformation(prs []*database.PullRequest, reviews 
 			repoStats = append(repoStats, repoStat)
 		}
 		reviewInfo = append(reviewInfo, types.ReviewInformation{
-			State: review.State,
+			State:      review.State,
+			Number:     review.Number,
+			Repository: review.Repo,
+			Additions:  review.Additions,
+			Deletions:  review.Deletions,
 		})
 	}
 
 	userInfo.RepoDetails = repoStats
 	userInfo.PRs = prInfo
+	userInfo.Reviews = reviewInfo
 	return userInfo
 }

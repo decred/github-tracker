@@ -80,7 +80,7 @@ type Commit struct {
 
 type PullRequestReview struct {
 	ID          int64
-	User        string
+	Author      string
 	State       string
 	SubmittedAt int64
 	CommitID    string

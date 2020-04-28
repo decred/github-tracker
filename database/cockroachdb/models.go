@@ -63,7 +63,7 @@ func (Commit) TableName() string {
 type PullRequestReview struct {
 	PullRequestURL string `gorm:"not null"`
 	ID             int64  `gorm:"primary_key"`
-	User           string `gorm:"not null"`
+	Author         string `gorm:"not null"`
 	State          string `gorm:"not null"`
 	SubmittedAt    int64  `gorm:"not null"`
 	CommitID       string `gorm:"not null"`

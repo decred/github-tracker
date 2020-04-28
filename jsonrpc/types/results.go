@@ -40,7 +40,7 @@ type PullRequestInformation struct {
 }
 
 type ReviewInformation struct {
-	Repoistory string `json:"repo"`
+	Repository string `json:"repo"`
 	URL        string `json:"url"`
 	Number     int    `json:"number"`
 	Additions  int    `json:"additions"`

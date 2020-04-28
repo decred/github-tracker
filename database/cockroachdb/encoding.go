@@ -35,7 +35,7 @@ func DecodeCommit(commit *Commit) database.Commit {
 // EncodePullRequestReview encodes a database.PullRequestReview into a cockroachdb PullRequestReview.
 func EncodePullRequestReview(dbPullRequestReview *database.PullRequestReview) PullRequestReview {
 	prReview := PullRequestReview{}
-	prReview.User = dbPullRequestReview.User
+	prReview.Author = dbPullRequestReview.Author
 	prReview.State = dbPullRequestReview.State
 	prReview.SubmittedAt = dbPullRequestReview.SubmittedAt
 	prReview.CommitID = dbPullRequestReview.CommitID
@@ -49,7 +49,7 @@ func EncodePullRequestReview(dbPullRequestReview *database.PullRequestReview) Pu
 // DecodePullRequestReview decodes a cockroachdb PullRequestReview into a generic database.PullRequestReview
 func DecodePullRequestReview(prReview *PullRequestReview) database.PullRequestReview {
 	dbPullRequestReview := database.PullRequestReview{}
-	dbPullRequestReview.User = prReview.User
+	dbPullRequestReview.Author = prReview.Author
 	dbPullRequestReview.State = prReview.State
 	dbPullRequestReview.SubmittedAt = prReview.SubmittedAt
 	dbPullRequestReview.CommitID = prReview.CommitID

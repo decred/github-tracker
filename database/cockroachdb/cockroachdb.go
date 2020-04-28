@@ -8,10 +8,10 @@ import (
 	"fmt"
 	"net/url"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/decred/github-tracker/database"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
@@ -109,7 +109,7 @@ func (c *cockroachdb) ReviewsByUserDates(username string, start, end int64) ([]d
 	reviews := make([]PullRequestReview, 0, 1024) // PNOOMA
 	err := c.recordsdb.
 		Table(tableNameReviews).
-		Where("user = ? AND "+
+		Where("author = ? AND "+
 			"submitted_at BETWEEN ? AND ?",
 			username,
 			start,
@@ -119,27 +119,29 @@ func (c *cockroachdb) ReviewsByUserDates(username string, start, end int64) ([]d
 	if err != nil {
 		return nil, err
 	}
-	type RelatedCommit struct {
-		Additions int
-		Deletions int
-	}
 	dbReviews := make([]database.PullRequestReview, 0, len(reviews))
 	for _, vv := range reviews {
+		pr := PullRequest{}
 
-		reviewCommit := RelatedCommit{}
+		// TEMP CHECK TO MAKE SURE THAT IT REPO NAME MATCHES
+		repo := vv.Repo
+		if !strings.Contains(repo, "decred") {
+			repo = "decred/" + repo
+		}\
 		err := c.recordsdb.
-			Table(tableNameCommits).
-			Where("sha = ? ",
-				vv.CommitID).
-			Find(&reviewCommit).
+			Table(tableNamePullRequest).
+			Where("repo = ? AND number = ?",
+				repo,
+				vv.Number).
+			Find(&pr).
 			Error
 		if err != nil {
-			return nil, err
+			fmt.Errorf("pull request %v %v for review not found\n", repo, vv.Number)
+			continue
 		}
 		dbReview := DecodePullRequestReview(&vv)
-		dbReview.Additions = reviewCommit.Additions
-		dbReview.Deletions = reviewCommit.Deletions
-		spew.Dump(dbReview)
+		dbReview.Additions = pr.Additions
+		dbReview.Deletions = pr.Deletions
 		dbReviews = append(dbReviews, dbReview)
 	}
 	return dbReviews, nil
