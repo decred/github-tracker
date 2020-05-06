@@ -136,7 +136,7 @@ func (c *cockroachdb) ReviewsByUserDates(username string, start, end int64) ([]d
 			Find(&pr).
 			Error
 		if err != nil {
-			fmt.Errorf("pull request %v %v for review not found\n", repo, vv.Number)
+			log.Errorf("pull request %v %v for review not found\n", repo, vv.Number)
 			continue
 		}
 		dbReview := DecodePullRequestReview(&vv)

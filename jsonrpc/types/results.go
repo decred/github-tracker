@@ -22,7 +22,7 @@ type RepositoryInformation struct {
 	PRs             []string `json:"prs"`
 	Repository      string   `json:"repo"`
 	CommitAdditions int64    `json:"commitadditions"`
-	CommitDeletions int64    `json:"commitdeletions`
+	CommitDeletions int64    `json:"commitdeletions"`
 	MergeAdditions  int64    `json:"mergeadditions"`
 	MergeDeletions  int64    `json:"mergedeletions"`
 	ReviewAdditions int64    `json:"reviewadditions"`
