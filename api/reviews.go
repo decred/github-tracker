@@ -42,9 +42,7 @@ func (a *Client) FetchPullRequestReviews(org, repo string, prNum int, lastUpdate
 	if err != nil {
 		return totalPullRequestReviews, err
 	}
+	totalPullRequestReviews = append(totalPullRequestReviews, pullRequestReviews...)
 
-	for _, review := range pullRequestReviews {
-		totalPullRequestReviews = append(totalPullRequestReviews, review)
-	}
 	return totalPullRequestReviews, nil
 }
