@@ -3,7 +3,6 @@ package api
 import (
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"time"
 )
 
@@ -31,11 +30,11 @@ func (a *Client) RateLimit() (ApiRateLimitRule, error) {
 			if core.Remaining == 0 {
 				exp := time.Unix(core.Reset, 0)
 				dur := time.Until(exp)
-				log.Printf("RATELIMIT REACHED - SLEEPING %v\n", dur)
+				log.Debugf("RATELIMIT REACHED - SLEEPING %v\n", dur)
 				time.Sleep(dur)
 				continue
 			}
-			log.Printf("NEW RATELIMIT LOADED - %d remaining, exp %v", core.Remaining, time.Unix(core.Reset, 0))
+			log.Debugf("NEW RATELIMIT LOADED - %d remaining, exp %v", core.Remaining, time.Unix(core.Reset, 0))
 			a.rateLimit = core
 		}
 		a.rateLimit.Remaining--

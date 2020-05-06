@@ -14,7 +14,7 @@ const (
 	apiPullRequestCommitsURL = `https://api.github.com/repos/%s/%s/pulls/%d/commits?per_page=250&page=%d&sort=updated&direction=desc`
 )
 
-func (a *Client) FetchPullRequest(org, repo string, prNum int) ([]byte, error) {
+func (a *Client) FetchPullRequest(org, repo string, prNum int) (*ApiPullRequest, error) {
 	url := fmt.Sprintf(apiPullRequestURL, org, repo, prNum)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -31,7 +31,19 @@ func (a *Client) FetchPullRequest(org, repo string, prNum int) ([]byte, error) {
 		return nil, fmt.Errorf("http returned %v", res.StatusCode)
 	}
 
-	return ioutil.ReadAll(res.Body)
+	body, err := ioutil.ReadAll(res.Body)
+	res.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	var pullRequest ApiPullRequest
+	err = json.Unmarshal(body, &pullRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pullRequest, nil
 }
 
 // FetchPullsRequest
