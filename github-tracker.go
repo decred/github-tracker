@@ -107,7 +107,7 @@ func run(ctx context.Context) error {
 func startJSONRPCServer(cfg *config, s *server.Server) (*jsonrpc.Server, error) {
 	var (
 		jsonrpcServer *jsonrpc.Server
-		jsonrpcListen = net.Listen
+		jsonrpcListen listenFunc
 		keyPair       tls.Certificate
 		err           error
 	)
