@@ -25,7 +25,7 @@ import (
 )
 
 const (
-	defaultAPIToken       = "975b07d598ac18456f6657e6a6cdebbdd1d9ca35"
+	defaultAPIToken       = ""
 	defaultConfigFilename = "github-tracker.conf"
 	defaultLogFilename    = "github-tracker.log"
 	defaultRPCPort        = "8001"
